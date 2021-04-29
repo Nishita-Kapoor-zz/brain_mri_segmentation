@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch.nn as nn
+import torch
+import os
 
 
 def show_aug(inputs, n_rows=5, n_cols=5, image=True):
@@ -57,3 +59,17 @@ def dice_coef_metric(inputs, target):
 
     return intersection / union
 
+
+def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
+    def f(x):
+        if x >= warmup_iters:
+            return 1
+        alpha = float(x) / warmup_iters
+        return warmup_factor * (1 - alpha) + alpha
+
+    return torch.optim.lr_scheduler.LambdaLR(optimizer, f)
+
+
+def create_folder(path):
+    if not os.path.exists(path):
+        os.makedirs(path)

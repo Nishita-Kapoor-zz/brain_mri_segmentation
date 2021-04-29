@@ -2,6 +2,7 @@ numpy
 pandas
 tqdm
 torch
+torchvision
 opencv-python
 matplotlib
 albumentations
