@@ -72,17 +72,18 @@ rx50_optimizer = torch.optim.Adam(rx50.parameters(), lr=5e-4)
 if args.train:
     if str(args.model).lower() == 'unet':
         train_model(args, model_name="Vanila_UNet", model=unet, train_loader=train_dataloader,
-                                                val_loader=val_dataloader, train_loss=bce_dice_loss,
-                                                optimizer=unet_optimizer, device=device)
+                    val_loader=val_dataloader, loss=bce_dice_loss,
+                    optimizer=unet_optimizer, device=device)
     elif str(args.model).lower() == 'resnext':
-        train_model(model_name="ResNeXt50", model=rx50, train_loader=train_dataloader,
-                                                val_loader=val_dataloader, train_loss=bce_dice_loss,
-                                                optimizer=rx50_optimizer, device=device)
+        train_model(args, model_name="ResNeXt50", model=rx50, train_loader=train_dataloader,
+                    val_loader=val_dataloader, loss=bce_dice_loss,
+                    optimizer=rx50_optimizer, device=device)
 
-
+'''
 if args.test:
     test_iou = evaluate(unet, test_dataloader)
     print(f"""Vanilla UNet\nMean IoU of the test images - {np.around(test_iou, 2)*100}%""")
 
     test_iou = evaluate(rx50, test_dataloader)
     print(f"""ResNext50\nMean IoU of the test images - {np.around(test_iou, 2) * 100}%""")
+'''
