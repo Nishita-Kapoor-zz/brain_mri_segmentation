@@ -50,9 +50,9 @@ train_set, temp_set = random_split(dataset_full, [train_size, temp_size])
 val_set, test_set = random_split(temp_set, [val_size, test_size])
 
 # Dataloaders
-train_dataloader = DataLoader(train_set, batch_size=args.batch_size, num_workers=4, shuffle=True)
-val_dataloader = DataLoader(val_set, batch_size=args.batch_size, num_workers=4, shuffle=True)
-test_dataloader = DataLoader(test_set, batch_size=args.batch_size, num_workers=4, shuffle=True)
+train_dataloader = DataLoader(train_set, batch_size=args.batch_size, num_workers=2, shuffle=True)
+val_dataloader = DataLoader(val_set, batch_size=args.batch_size, num_workers=2, shuffle=True)
+test_dataloader = DataLoader(test_set, batch_size=args.batch_size, num_workers=2, shuffle=True)
 
 # Visualize data augmentations
 if args.view_aug:
@@ -61,20 +61,16 @@ if args.view_aug:
     show_aug(images)
     show_aug(masks, image=False)
 
-# Models
-unet = UNet(n_classes=1).to(device)
-rx50 = ResNeXtUNet(n_classes=1).to(device)
-
-# Optimizers
-unet_optimizer = torch.optim.Adamax(unet.parameters(), lr=1e-3)
-rx50_optimizer = torch.optim.Adam(rx50.parameters(), lr=5e-4)
-
 if args.train:
     if str(args.model).lower() == 'unet':
+        unet = UNet(n_classes=1).to(device)
+        unet_optimizer = torch.optim.Adamax(unet.parameters(), lr=1e-3)
         train_model(args, model_name="Vanila_UNet", model=unet, train_loader=train_dataloader,
                     val_loader=val_dataloader, loss=bce_dice_loss,
                     optimizer=unet_optimizer, device=device)
     elif str(args.model).lower() == 'resnext':
+        rx50 = ResNeXtUNet(n_classes=1).to(device)
+        rx50_optimizer = torch.optim.Adam(rx50.parameters(), lr=5e-4)
         train_model(args, model_name="ResNeXt50", model=rx50, train_loader=train_dataloader,
                     val_loader=val_dataloader, loss=bce_dice_loss,
                     optimizer=rx50_optimizer, device=device)

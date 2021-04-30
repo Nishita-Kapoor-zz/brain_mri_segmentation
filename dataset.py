@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import cv2
 import albumentations as A
-from albumentations.pytorch import ToTensorV2
+from albumentations.pytorch import ToTensor
 
 
 class BrainMRIDataset(Dataset):
@@ -72,5 +72,5 @@ image_transforms = A.Compose([
     A.Transpose(p=0.5),
     A.ShiftScaleRotate(shift_limit=0.01, scale_limit=0.04, rotate_limit=0, p=0.25),
     A.Normalize(p=1.0),
-    ToTensorV2(),
+    ToTensor(),
 ])
