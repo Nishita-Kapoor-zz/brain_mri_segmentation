@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 
 def train_model(args, model_name, model, train_loader, val_loader, loss, optimizer, device, threshold=0.5):
-    print(model_name)
+    print('Training: ' + model_name)
     best_dice = 0
 
     logs_path = "./output/logs/" + str(args.run_name)
@@ -17,7 +17,7 @@ def train_model(args, model_name, model, train_loader, val_loader, loss, optimiz
 
     tb_writer = SummaryWriter(logs_path)
 
-    for epoch in range(1, (args.num_epochs + 1)):
+    for epoch in tqdm(range(1, (args.num_epochs + 1))):
         model.train()  # Enter train mode
 
         losses = []
@@ -28,7 +28,7 @@ def train_model(args, model_name, model, train_loader, val_loader, loss, optimiz
             warmup_iters = min(100, len(train_loader) - 1)
             lr_scheduler = warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
-        for i_step, (image, mask) in tqdm(enumerate(train_loader)):
+        for i_step, (image, mask) in enumerate(train_loader):
             image = image.to(device)
             mask = mask.to(device)
 

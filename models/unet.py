@@ -60,10 +60,3 @@ class UNet(nn.Module):
         return out
 
 
-'''
-if __name__ == '__main__':
-    #device = torch.device("cuda")
-    unet = UNet(n_classes=1)
-    output = unet(torch.randn(1, 3, 256, 256))
-    print("", output.shape)
-'''

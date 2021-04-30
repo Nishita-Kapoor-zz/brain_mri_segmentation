@@ -42,8 +42,6 @@ class BrainMRIDataset(Dataset):
                 for filename in os.listdir(sub_dir_path):
                     image_path = sub_dir_path + "/" + filename
                     data_map.extend([dirname, image_path])
-            else:
-                print("This is not a dir:", sub_dir_path)
 
         df = pd.DataFrame({"dirname": data_map[::2],
                            "path": data_map[1::2]})
@@ -59,11 +57,18 @@ class BrainMRIDataset(Dataset):
         df = pd.DataFrame({"patient": df_imgs.dirname.values,
                            "image_path": imgs,
                            "mask_path": masks})
-
         return df
 
+    def create_target_column(self):
+        self.df["diagnosis"] = self.df["mask_path"].apply(lambda m: self.positiv_negativ_diagnosis(m))
 
-PATCH_SIZE = 256
+    # Adding A/B column for diagnosis
+    def positiv_negativ_diagnosis(self, mask_path):
+        value = np.max(cv2.imread(mask_path))
+        return 1 if value > 0 else 0
+
+
+PATCH_SIZE = 128
 image_transforms = A.Compose([
     A.Resize(width=PATCH_SIZE, height=PATCH_SIZE, p=1.0),
     A.HorizontalFlip(p=0.5),

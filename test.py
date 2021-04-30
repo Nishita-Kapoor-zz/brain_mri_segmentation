@@ -14,10 +14,10 @@ def predict(args, model, device, threshold=0.5):
     mask_path = join(image_path.split('.')[0], '_mask.tif')
     # image
     # test_sample = test_df[test_df["diagnosis"] == 1].sample(1).values[0]
-    image = cv2.resize(cv2.imread(image_path), (256, 256))
+    image = cv2.resize(cv2.imread(image_path), (128, 128))
 
     # mask
-    mask = cv2.resize(cv2.imread(mask_path), (256, 256))
+    mask = cv2.resize(cv2.imread(mask_path), (128, 128))
 
     # check if checkpoint available and load
     checkpoint_path = "./output/checkpoints/checkpoint_" + str(args.run_name) + ".pth"

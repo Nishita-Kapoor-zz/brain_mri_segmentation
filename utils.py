@@ -53,10 +53,9 @@ def bce_dice_loss(inputs, target):
 
 
 def dice_coef_metric(inputs, target):
-    intersection = 2.0 * (target * inputs).sum()
-    union = target.sum() + inputs.sum()
-    if target.sum() == 0 and inputs.sum() == 0:
-        return 1.0
+    smooth = 1.0
+    intersection = (2.0 * (target * inputs).sum()) + smooth
+    union = target.sum() + inputs.sum() + smooth
 
     return intersection / union
 
