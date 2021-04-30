@@ -7,9 +7,10 @@ from models.unet import UNet
 from models.ResNeXtUNet import ResNeXtUNet
 import argparse
 from train import train_model
-from utils import bce_dice_loss
+from utils import bce_dice_loss, plot_plate_overlap
 import os
-from test import evaluate, predict
+from test import evaluate, predict_single, batch_preds_overlap
+import numpy as np
 
 
 parser = argparse.ArgumentParser(description="Brain MRI Segmentation")
@@ -61,25 +62,60 @@ if args.view_aug:
     show_aug(images)
     show_aug(masks, image=False)
 
-if args.train:
-    if str(args.model).lower() == 'unet':
+
+if str(args.model).lower() == 'unet':
+
+    if args.train:
         unet = UNet(n_classes=1).to(device)
         unet_optimizer = torch.optim.Adamax(unet.parameters(), lr=1e-3)
         train_model(args, model_name="Vanila_UNet", model=unet, train_loader=train_dataloader,
                     val_loader=val_dataloader, loss=bce_dice_loss,
                     optimizer=unet_optimizer, device=device)
-    elif str(args.model).lower() == 'resnext':
+
+    if args.test:
+        test_dice_unet = evaluate(args, model=unet, test_loader=test_dataloader, device=device)
+        print(f"""Vanilla UNet\nMean dice of the test images - {np.around(test_dice_unet, 2) * 100}%""")
+
+    if args.image_path is not None:
+        pass
+
+    prediction_overlap_u = batch_preds_overlap(unet, test_samples)
+    pred_overlap_5x1_u = []
+    pred_overlap_5x3_u = []
+    for i in range(5, 105 + 5, 5):
+        pred_overlap_5x1_u.append(np.hstack(np.array(prediction_overlap_u[i - 5:i])))
+    for i in range(3, 21 + 3, 3):
+        pred_overlap_5x3_u.append(np.vstack(pred_overlap_5x1_u[i - 3:i]))
+    title1 = "Predictions of Vanilla UNet"
+    for num, batch in enumerate(pred_overlap_5x3_u):
+        plot_plate_overlap(batch, title1, num)
+
+
+if str(args.model).lower() == 'resnext':
+
+    if args.train:
         rx50 = ResNeXtUNet(n_classes=1).to(device)
         rx50_optimizer = torch.optim.Adam(rx50.parameters(), lr=5e-4)
         train_model(args, model_name="ResNeXt50", model=rx50, train_loader=train_dataloader,
                     val_loader=val_dataloader, loss=bce_dice_loss,
                     optimizer=rx50_optimizer, device=device)
+    if args.test:
+        test_dice_resnext = evaluate(args, model=rx50, test_loader=test_dataloader, device=device)
+        print(f"""ResNext50\nMean dice of the test images - {np.around(test_dice_resnext, 2) * 100}%""")
 
-'''
-if args.test:
-    test_iou = evaluate(unet, test_dataloader)
-    print(f"""Vanilla UNet\nMean IoU of the test images - {np.around(test_iou, 2)*100}%""")
+    if args.image_path is not None:
+        pass
 
-    test_iou = evaluate(rx50, test_dataloader)
-    print(f"""ResNext50\nMean IoU of the test images - {np.around(test_iou, 2) * 100}%""")
-'''
+    prediction_overlap_r = batch_preds_overlap(rx50, test_samples)
+    pred_overlap_5x1_r = []
+    pred_overlap_5x3_r = []
+    for i in range(5, 105 + 5, 5):
+        pred_overlap_5x1_r.append(np.hstack(np.array(prediction_overlap_r[i - 5:i])))
+    for i in range(3, 21 + 3, 3):
+        pred_overlap_5x3_r.append(np.vstack(pred_overlap_5x1_r[i - 3:i]))
+
+    title3 = "Predictions of UNet with ResNeXt50 backbone"
+    for num, batch in enumerate(pred_overlap_5x3_r):
+        plot_plate_overlap(batch, title3, num)
+
+

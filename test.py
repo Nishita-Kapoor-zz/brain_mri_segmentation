@@ -8,7 +8,7 @@ from os.path import join, exists
 import matplotlib.pyplot as plt
 
 
-def predict(args, model, device, threshold=0.5):
+def predict_single(args, model, device, threshold=0.5):
 
     image_path = args.image_path
     mask_path = join(image_path.split('.')[0], '_mask.tif')
@@ -81,6 +81,58 @@ def evaluate(args, model, test_loader, device, threshold=0.5):
             test_total_dice += test_dice
 
         test_mean_dice = test_total_dice / i_step
-        print(f"""Mean dice of the test images - {np.around(test_mean_dice, 2) * 100}%""")
+
+
+
+def batch_preds_overlap(args, model, samples, device, threshold=0.3):
+    """
+    Computes prediction on the dataset
+
+    Returns: list with images overlapping with predictions
+
+    """
+    prediction_overlap = []
+
+    for test_sample in samples:
+        # sample
+        image = cv2.resize(cv2.imread(test_sample[1]), (128, 128))
+        image = image / 255.
+
+        # gt
+        ground_truth = cv2.resize(cv2.imread(test_sample[2], 0), (128, 128)).astype("uint8")
+
+        # check if checkpoint available and load
+        checkpoint_path = "./output/checkpoints/checkpoint_" + str(args.run_name) + ".pth"
+        if exists(checkpoint_path):
+            checkpoint = load_checkpoint(path=checkpoint_path, model=model)
+        else:
+            raise AssertionError("Checkpoint doesn't exist, please train model first")
+
+        model = checkpoint["model"]
+        model = model.to(device)
+        model.eval()
+
+        # pred
+        prediction = torch.tensor(image).unsqueeze(0).permute(0, 3, 1, 2)
+        prediction = model(prediction.to(device).float())
+        prediction = prediction.detach().cpu().numpy()[0, 0, :, :]
+
+        prediction[np.nonzero(prediction < threshold)] = 0.0
+        prediction[np.nonzero(prediction >= threshold)] = 255.  # 1.0
+        prediction = prediction.astype("uint8")
+
+        # overlap
+        original_img = cv2.resize(cv2.imread(test_sample[1]), (128, 128))
+
+        _, thresh_gt = cv2.threshold(ground_truth, 127, 255, 0)
+        _, thresh_p = cv2.threshold(prediction, 127, 255, 0)
+        contours_gt, _ = cv2.findContours(thresh_gt, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours_p, _ = cv2.findContours(thresh_p, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        overlap_img = cv2.drawContours(original_img, contours_gt, 0, (0, 255, 0), 1)
+        overlap_img = cv2.drawContours(overlap_img, contours_p, 0, (255, 36, 0), 1)  # 255,0,0
+        prediction_overlap.append(overlap_img)
+
+    return prediction_overlap
 
 

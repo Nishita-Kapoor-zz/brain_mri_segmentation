@@ -4,6 +4,9 @@ import torch.nn as nn
 import torch
 import os
 from collections import OrderedDict
+from PIL import Image
+from glob import glob
+from os.path import join
 
 
 def show_aug(inputs, n_rows=5, n_cols=5, image=True):
@@ -128,3 +131,39 @@ def load_checkpoint(path, model, optimizer=None, params=False, epoch=False):
         rets["epoch"] = resume["epoch"]
 
     return rets
+
+
+def plot_plate_overlap(batch_preds, title, num):
+    save_path = "./output/gif_images/"
+    create_folder(save_path)
+    plt.figure(figsize=(15, 15))
+    plt.imshow(batch_preds)
+    plt.axis("off")
+
+    plt.figtext(0.76,0.75,"Green - Ground Truth", va="center", ha="center", size=20,color="lime")
+    plt.figtext(0.26,0.75,"Red - Prediction", va="center", ha="center", size=20, color="#ff0d00")
+    plt.suptitle(title, y=.80, fontsize=20, weight="bold", color="#00FFDE")
+
+    fn = "_".join((title+str(num)).lower().split()) + ".png"
+    plt.savefig(save_path + fn, bbox_inches='tight', pad_inches=0.2, transparent=False, facecolor='black')
+    plt.close()
+
+
+def make_gif(title):
+    folder_path = "./output/gif_images/"
+    base_name = "_".join(title.lower().split())
+    file_path = join(folder_path,base_name)
+
+    base_len = len(file_path)
+    end_len = len(".png")
+    fp_in = f"{file_path}*.png"
+    fp_out = f"{file_path}.gif"
+
+    img, *imgs = [Image.open(f)
+                  for f in sorted(glob.glob(fp_in),
+                                  key=lambda x: int(x[base_len:-end_len]))]
+
+    img.save(fp=fp_out, format='GIF', append_images=imgs,
+             save_all=True, duration=1000, loop=0)
+
+    return fp_out
