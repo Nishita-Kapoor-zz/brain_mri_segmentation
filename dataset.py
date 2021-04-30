@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import cv2
 import albumentations as A
-from albumentations.pytorch import ToTensor
+from albumentations.pytorch import ToTensorV2
 
 
 class BrainMRIDataset(Dataset):
@@ -60,48 +60,9 @@ class BrainMRIDataset(Dataset):
                            "image_path": imgs,
                            "mask_path": masks})
 
-        # Adding A/B column for diagnosis
-        def positiv_negativ_diagnosis(mask_path):
-            value = np.max(cv2.imread(mask_path))
-            if value > 0:
-                return 1
-            else:
-                return 0
-
-        df["mask"] = df["mask_path"].apply(lambda m: positiv_negativ_diagnosis(m))
-
         return df
 
 
-# Transforms
-
-'''
-strong_transforms = A.Compose([
-    A.Resize(width=PATCH_SIZE, height=PATCH_SIZE, p=1.0),
-    A.HorizontalFlip(p=0.5),
-    A.VerticalFlip(p=0.5),
-    A.RandomRotate90(p=0.5),
-    A.Transpose(p=0.5),
-    A.ShiftScaleRotate(shift_limit=0.01, scale_limit=0.04, rotate_limit=0, p=0.25),
-
-    # Pixels
-    A.RandomBrightnessContrast(p=0.5),
-    A.RandomGamma(p=0.25),
-    A.IAAEmboss(p=0.25),
-    A.Blur(p=0.01, blur_limit=3),
-
-    # Affine
-    A.OneOf([
-        A.ElasticTransform(p=0.5, alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
-        A.GridDistortion(p=0.5),
-        A.OpticalDistortion(p=1, distort_limit=2, shift_limit=0.5)
-    ], p=0.8),
-
-    A.Normalize(p=1.0),
-    # https://albumentations.readthedocs.io/en/latest/api/pytorch.html?highlight=ToTensor#albumentations.pytorch.transforms.ToTensor
-    ToTensor(),
-])
-'''
 PATCH_SIZE = 256
 image_transforms = A.Compose([
     A.Resize(width=PATCH_SIZE, height=PATCH_SIZE, p=1.0),
@@ -110,7 +71,6 @@ image_transforms = A.Compose([
     A.RandomRotate90(p=0.5),
     A.Transpose(p=0.5),
     A.ShiftScaleRotate(shift_limit=0.01, scale_limit=0.04, rotate_limit=0, p=0.25),
-
     A.Normalize(p=1.0),
-    ToTensor(),
+    ToTensorV2(),
 ])
