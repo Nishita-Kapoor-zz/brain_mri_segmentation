@@ -14,7 +14,7 @@ from test import evaluate, predict
 
 parser = argparse.ArgumentParser(description="Brain MRI Segmentation")
 parser.add_argument('--view_aug', type=bool, default=False, help='Visualize data augmentations')
-parser.add_argument('--num_epochs', type=int, default=50, help='Number of epochs to train on')
+parser.add_argument('--num_epochs', type=int, default=3, help='Number of epochs to train on')
 parser.add_argument('--train', default=True, type=bool, help='Train the model')
 parser.add_argument('--test', default=False, type=bool, help='Test the model')
 parser.add_argument("--image_path", default=None, type=str, help="Path for single image prediction (inference)")
@@ -23,7 +23,7 @@ parser.add_argument('--root_dir', default='/home/nishita/datasets/brain_mri/kagg
 parser.add_argument("--run_name", default=0, type=str, help="Name of experiment/run")
 parser.add_argument("--model", default='unet', type=str, help="Choose model from 'unet or resnext")
 parser.add_argument("--batch_size", default=32, type=int, help="batch-size to use")
-parser.add_argument("--lr_scheduler", efault=False, type=bool, help='lr scheduler')
+parser.add_argument("--lr_scheduler", default=False, type=bool, help='lr scheduler')
 
 args = parser.parse_args()
 print(f'The arguments are {vars(args)}')

@@ -1,8 +1,9 @@
 from utils import warmup_lr_scheduler, dice_coef_metric
 import numpy as np
 import torch
-from utils import create_folder
+from utils import create_folder, save_checkpoint
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 
 def train_model(args, model_name, model, train_loader, val_loader, loss, optimizer, device, threshold=0.5):
@@ -27,7 +28,7 @@ def train_model(args, model_name, model, train_loader, val_loader, loss, optimiz
             warmup_iters = min(100, len(train_loader) - 1)
             lr_scheduler = warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
-        for i_step, (image, mask) in enumerate(train_loader):
+        for i_step, (image, mask) in tqdm(enumerate(train_loader)):
             image = image.to(device)
             mask = mask.to(device)
 
@@ -86,7 +87,7 @@ def train_model(args, model_name, model, train_loader, val_loader, loss, optimiz
 
         if val_mean_dice > best_dice:
             # Save model
-            save_checkpoint(path=checkpoint_path + "checkpoint_v" + str(args.version) + ".pth", model=model,
+            save_checkpoint(path=checkpoint_path + "checkpoint_" + str(args.run_name) + ".pth", model=model,
                             epoch=epoch, optimizer=optimizer)
             best_dice = val_mean_dice
 
@@ -94,5 +95,4 @@ def train_model(args, model_name, model, train_loader, val_loader, loss, optimiz
             print('best record: [epoch %d], [val dice %.5f]' % (epoch, val_mean_dice))
             print('*****************************************************')
 
-        tb_writer.close()
-
+    tb_writer.close()
