@@ -15,9 +15,9 @@ import numpy as np
 
 parser = argparse.ArgumentParser(description="Brain MRI Segmentation")
 parser.add_argument('--view_aug', type=bool, default=False, help='Visualize data augmentations')
-parser.add_argument('--num_epochs', type=int, default=3, help='Number of epochs to train on')
+parser.add_argument('--num_epochs', type=int, default=30, help='Number of epochs to train on')
 parser.add_argument('--train', default=True, type=bool, help='Train the model')
-parser.add_argument('--test', default=False, type=bool, help='Test the model')
+parser.add_argument('--test', default=True, type=bool, help='Test the model')
 parser.add_argument("--image_path", default=None, type=str, help="Path for single image prediction (inference)")
 parser.add_argument('--gpus', default="0", type=str, help='Which GPU to use?')
 parser.add_argument('--root_dir', default='/home/nishita/datasets/brain_mri/kaggle_3m/', type=str, help='Path of dataset')
@@ -67,7 +67,7 @@ if str(args.model).lower() == 'unet':
 
     if args.train:
         unet = UNet(n_classes=1).to(device)
-        unet_optimizer = torch.optim.Adamax(unet.parameters(), lr=1e-3)
+        unet_optimizer = torch.optim.Adamax(unet.parameters(), lr=5e-4)
         train_model(args, model_name="Vanila_UNet", model=unet, train_loader=train_dataloader,
                     val_loader=val_dataloader, loss=bce_dice_loss,
                     optimizer=unet_optimizer, device=device)
@@ -78,7 +78,7 @@ if str(args.model).lower() == 'unet':
 
     if args.image_path is not None:
         pass
-
+'''
     prediction_overlap_u = batch_preds_overlap(unet, test_samples)
     pred_overlap_5x1_u = []
     pred_overlap_5x3_u = []
@@ -89,7 +89,7 @@ if str(args.model).lower() == 'unet':
     title1 = "Predictions of Vanilla UNet"
     for num, batch in enumerate(pred_overlap_5x3_u):
         plot_plate_overlap(batch, title1, num)
-
+'''
 
 if str(args.model).lower() == 'resnext':
 
@@ -105,7 +105,7 @@ if str(args.model).lower() == 'resnext':
 
     if args.image_path is not None:
         pass
-
+'''
     prediction_overlap_r = batch_preds_overlap(rx50, test_samples)
     pred_overlap_5x1_r = []
     pred_overlap_5x3_r = []
@@ -117,5 +117,5 @@ if str(args.model).lower() == 'resnext':
     title3 = "Predictions of UNet with ResNeXt50 backbone"
     for num, batch in enumerate(pred_overlap_5x3_r):
         plot_plate_overlap(batch, title3, num)
-
+'''
 
