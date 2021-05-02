@@ -40,7 +40,7 @@ class ResNeXtUNet(nn.Module):
     def __init__(self, n_classes):
         super().__init__()
 
-        self.base_model = torch.hub.load('pytorch/vision', 'resnext50_32x4d', pretrained=True, force_reload=True)  # resnext50_32x4d(pretrained=True)
+        self.base_model = torch.hub.load('pytorch/vision', 'resnext50_32x4d', pretrained=True, force_reload=False)  # resnext50_32x4d(pretrained=True)
         self.base_layers = list(self.base_model.children())
         filters = [4 * 64, 4 * 128, 4 * 256, 4 * 512]
 

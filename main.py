@@ -28,6 +28,7 @@ parser.add_argument("--lr_scheduler", default=False, type=bool, help='lr schedul
 
 args = parser.parse_args()
 print(f'The arguments are {vars(args)}')
+torch.manual_seed(0)
 
 # Check for GPUs
 if torch.cuda.is_available():
@@ -53,7 +54,7 @@ val_set, test_set = random_split(temp_set, [val_size, test_size])
 # Dataloaders
 train_dataloader = DataLoader(train_set, batch_size=args.batch_size, num_workers=2, shuffle=True)
 val_dataloader = DataLoader(val_set, batch_size=args.batch_size, num_workers=2, shuffle=True)
-test_dataloader = DataLoader(test_set, batch_size=args.batch_size, num_workers=2, shuffle=True)
+test_dataloader = DataLoader(test_set, batch_size=args.batch_size, num_workers=2, shuffle=False)
 
 # Visualize data augmentations
 if args.view_aug:
@@ -75,11 +76,11 @@ if str(args.model).lower() == 'unet':
 
     if args.test:
         test_dice_unet = evaluate(args, model=unet, test_loader=test_dataloader, device=device)
-        print(f"""Vanilla UNet\nMean dice of the test images - {np.around(test_dice_unet, 2) * 100}%""")
+        print(f"""Vanilla UNet\nMean dice of the test images - {np.around(test_dice_unet, 4) * 100}%""")
 
     if args.image_path is not None:
         pass
-'''
+
     prediction_overlap_u = batch_preds_overlap(unet, test_samples)
     pred_overlap_5x1_u = []
     pred_overlap_5x3_u = []
@@ -90,7 +91,7 @@ if str(args.model).lower() == 'unet':
     title1 = "Predictions of Vanilla UNet"
     for num, batch in enumerate(pred_overlap_5x3_u):
         plot_plate_overlap(batch, title1, num)
-'''
+
 
 if str(args.model).lower() == 'resnext':
     rx50 = ResNeXtUNet(n_classes=1).to(device)
@@ -102,7 +103,7 @@ if str(args.model).lower() == 'resnext':
                     optimizer=rx50_optimizer, device=device)
     if args.test:
         test_dice_resnext = evaluate(args, model=rx50, test_loader=test_dataloader, device=device)
-        print(f"""ResNext50\nMean dice of the test images - {np.around(test_dice_resnext, 2) * 100}%""")
+        print(f"""ResNext50\nMean dice of the test images - {np.around(test_dice_resnext, 4) * 100}%""")
 
     if args.image_path is not None:
         pass
