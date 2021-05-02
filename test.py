@@ -81,7 +81,7 @@ def evaluate(args, model, test_loader, device, threshold=0.5):
             test_total_dice += test_dice
 
         test_mean_dice = test_total_dice / i_step
-
+    return test_mean_dice
 
 
 def batch_preds_overlap(args, model, samples, device, threshold=0.3):
