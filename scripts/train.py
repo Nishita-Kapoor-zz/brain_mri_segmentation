@@ -6,12 +6,12 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 
-def train_model(args, model_name, model, train_loader, val_loader, loss, optimizer, device, threshold=0.5):
-    print('Training: ' + model_name)
+def train_model(args, model, train_loader, val_loader, loss, optimizer, device, threshold=0.5):
+    print('Training: ' + args.model + ' Lr_Scheduler: ' + args.lr_scheduler)
     best_dice = 0
 
     logs_path = "./output/logs/" + str(args.run_name)
-    checkpoint_path = "./output/checkpoints/"
+    checkpoint_path = "../output/checkpoints/"
     create_folder(logs_path)
     create_folder(checkpoint_path)
 

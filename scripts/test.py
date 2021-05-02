@@ -6,18 +6,21 @@ from tqdm import tqdm
 import cv2
 from os.path import join, exists
 import matplotlib.pyplot as plt
+from data.dataset import image_transforms
 
 
-def predict_single(args, model, device, threshold=0.5):
+def predict_single(args,  model, device, threshold=0.5):
 
     image_path = args.image_path
-    mask_path = join(image_path.split('.')[0], '_mask.tif')
-    # image
-    # test_sample = test_df[test_df["diagnosis"] == 1].sample(1).values[0]
-    image = cv2.resize(cv2.imread(image_path), (128, 128))
+    mask_path = image_path.split('.')[0] + '_mask.tif'
 
-    # mask
-    mask = cv2.resize(cv2.imread(mask_path), (128, 128))
+    image_original = cv2.imread(image_path)
+    mask = cv2.imread(mask_path, 0)
+
+    augmented = image_transforms(image=image_original, mask=mask)
+
+    image = augmented['image'].unsqueeze(0).to(device)
+    mask = augmented['mask'].to(device)
 
     # check if checkpoint available and load
     checkpoint_path = "./output/checkpoints/checkpoint_" + str(args.run_name) + ".pth"
@@ -31,31 +34,35 @@ def predict_single(args, model, device, threshold=0.5):
     model.eval()
 
     # pred
-    pred = torch.tensor(image.astype(np.float32) / 255.).unsqueeze(0).permute(0, 3, 1, 2)
-    pred = model(pred.to(device))
-    pred = pred.detach().cpu().numpy()[0, 0, :, :]
+    #image_in = torch.tensor(image.astype(np.float32) / 255.).unsqueeze(0).permute(0, 3, 1, 2)
+    pred = model(image)
+    pred = pred.detach().cpu().numpy()  #[0, 0, :, :]
 
     # pred with threshold
-    pred_t = np.copy(pred)
-    pred_t[np.nonzero(pred_t < threshold)] = 0.0
-    pred_t[np.nonzero(pred_t >= threshold)] = 255.  # 1.0
-    pred_t = pred_t.astype("uint8")
+    pred_t = np.copy(pred)[0, 0, :, :]
+    pred_t[np.nonzero(pred_t < 0.3)] = 0.0
+    pred_t[np.nonzero(pred_t >= 0.3)] = 1.0  # 255.0
+    # pred_t = pred_t.astype("uint8")
+    dice = dice_coef_metric(pred_t, mask.data.cpu().numpy())
 
     # plot
     fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 10))
 
-    ax[0, 0].imshow(image)
-    ax[0, 0].set_title("image")
-    ax[0, 1].imshow(mask)
-    ax[0, 1].set_title("mask")
-    ax[1, 0].imshow(pred)
-    ax[1, 0].set_title("prediction")
+    ax[0, 0].imshow(image_original)
+    ax[0, 0].set_title("Image")
+    ax[0, 1].imshow(mask.detach().cpu().numpy()[0, :, :])
+    ax[0, 1].set_title("Ground Truth")
+    ax[1, 0].imshow(pred[0, 0, :, :], cmap="jet")
+    ax[1, 0].set_title("Prediction probabilities")
     ax[1, 1].imshow(pred_t)
-    ax[1, 1].set_title("prediction with threshold")
-    plt.show()
+    ax[1, 1].set_title("Prediction with threshold=0.3")
+    plt.suptitle("Dice Coeffecient: {}".format(dice.round(3)), fontsize=20)
+    # plt.show()
+    plt.savefig("images/prediction.png")
 
 
 def evaluate(args, model, test_loader, device, threshold=0.5):
+    print('Evaluating: ' + args.model + ' Lr_Scheduler: ' + str(args.lr_scheduler))
 
     checkpoint_path = "./output/checkpoints/checkpoint_" + str(args.run_name) + ".pth"
     checkpoint = load_checkpoint(path=checkpoint_path, model=model)
