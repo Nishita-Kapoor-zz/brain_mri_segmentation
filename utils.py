@@ -140,8 +140,8 @@ def plot_plate_overlap(batch_preds, title, num):
     plt.imshow(batch_preds)
     plt.axis("off")
 
-    plt.figtext(0.76,0.75,"Green - Ground Truth", va="center", ha="center", size=20,color="lime")
-    plt.figtext(0.26,0.75,"Red - Prediction", va="center", ha="center", size=20, color="#ff0d00")
+    plt.figtext(0.76, 0.75, "Green - Ground Truth", va="center", ha="center", size=20,color="lime")
+    plt.figtext(0.26, 0.75, "Red - Prediction", va="center", ha="center", size=20, color="#ff0d00")
     plt.suptitle(title, y=.80, fontsize=20, weight="bold", color="#00FFDE")
 
     fn = "_".join((title+str(num)).lower().split()) + ".png"

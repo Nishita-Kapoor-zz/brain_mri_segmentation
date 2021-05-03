@@ -60,13 +60,19 @@ class BrainMRIDataset(Dataset):
                            "mask_path": masks})
         return df
 
-    def create_target_column(self):
+    def get_positive_testdf(self):
         self.df["diagnosis"] = self.df["mask_path"].apply(lambda m: self.positiv_negativ_diagnosis(m))
+        test_samples = self.df[self.df["diagnosis"] == 1].sample(105).values
+        return test_samples
 
     # Adding A/B column for diagnosis
     def positiv_negativ_diagnosis(self, mask_path):
         value = np.max(cv2.imread(mask_path))
         return 1 if value > 0 else 0
+
+
+
+
 
 
 PATCH_SIZE = 128
