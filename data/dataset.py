@@ -60,7 +60,7 @@ class BrainMRIDataset(Dataset):
                            "mask_path": masks})
         return df
 
-    def get_positive_testdf(self):
+    def get_positive_samples(self):
         self.df["diagnosis"] = self.df["mask_path"].apply(lambda m: self.positiv_negativ_diagnosis(m))
         test_samples = self.df[self.df["diagnosis"] == 1].sample(105).values
         return test_samples

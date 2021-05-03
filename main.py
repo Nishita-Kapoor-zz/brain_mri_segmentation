@@ -9,7 +9,7 @@ import argparse
 from scripts.train import train_model
 from utils import bce_dice_loss, plot_plate_overlap
 import os
-from scripts.test import evaluate, predict_single, batch_preds_overlap
+from scripts.test import evaluate, predict_single, batch_preds_overlap, create_gif
 from data.dataloader import create_dataloaders
 import numpy as np
 
@@ -45,6 +45,7 @@ else:
 
 train_dataloader, val_dataloader, test_dataloader, test_samples = create_dataloaders(args, transforms=image_transforms)
 
+
 # Visualize data augmentations
 if args.view_aug:
     images, masks = next(iter(train_dataloader))
@@ -55,6 +56,7 @@ if args.view_aug:
 
 if str(args.model).lower() == 'unet':
     model = UNet(n_classes=1).to(device)
+    create_gif(args, model=model, dataloader=test_dataloader, device=device, threshold=0.5)
 
 elif str(args.model).lower() == 'resnext':
     model = ResNeXtUNet(n_classes=1).to(device)
