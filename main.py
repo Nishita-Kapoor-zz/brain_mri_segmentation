@@ -7,9 +7,9 @@ from models.unet import UNet
 from models.ResNeXtUNet import ResNeXtUNet
 import argparse
 from scripts.train import train_model
-from utils import bce_dice_loss, plot_plate_overlap
+from utils import bce_dice_loss, plot_plate_overlap, make_gif
 import os
-from scripts.test import evaluate, predict_single, batch_preds_overlap, create_gif
+from scripts.test import evaluate, predict_single, batch_preds_overlap
 from data.dataloader import create_dataloaders
 import numpy as np
 
@@ -42,9 +42,8 @@ else:
     device = torch.device("cpu")
     print("No CUDA device found. Using CPU instead.")
 
-
+# Get dataloaders and test samples for creating gifs
 train_dataloader, val_dataloader, test_dataloader, test_samples = create_dataloaders(args, transforms=image_transforms)
-
 
 # Visualize data augmentations
 if args.view_aug:
@@ -53,10 +52,8 @@ if args.view_aug:
     show_aug(images)
     show_aug(masks, image=False)
 
-
 if str(args.model).lower() == 'unet':
     model = UNet(n_classes=1).to(device)
-    create_gif(args, model=model, dataloader=test_dataloader, device=device, threshold=0.5)
 
 elif str(args.model).lower() == 'resnext':
     model = ResNeXtUNet(n_classes=1).to(device)
@@ -73,10 +70,11 @@ if args.test:
     print(f"""Mean dice of the test images - {np.around(test_dice_unet, 4) * 100}%""")
 
 # Prediction of single image
-# if args.image_path is not None:
-#    predict_single(args, model=model, device=device)
+if args.image_path is not None:
+    predict_single(args, model=model, device=device)
 
-
+# Generate batch predictions for gif
 batch_preds_overlap(args, model=model, samples=test_samples, device=device)
-
+title = "Predictions of " + str(args.model)
+gif_path = make_gif(title=title)
 

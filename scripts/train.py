@@ -1,9 +1,8 @@
-from utils import warmup_lr_scheduler, dice_coef_metric
 import numpy as np
 import torch
-from utils import create_folder, save_checkpoint
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+from utils import create_folder, save_checkpoint, warmup_lr_scheduler, dice_coef_metric
 
 
 def train_model(args, model, train_loader, val_loader, loss, optimizer, device, threshold=0.5):
@@ -60,7 +59,6 @@ def train_model(args, model, train_loader, val_loader, loss, optimizer, device, 
             epoch, i_step + 1, len(train_loader), train_mean_loss, train_mean_dice))
 
         # Validation
-
         model.eval()
         val_total_dice = 0
 

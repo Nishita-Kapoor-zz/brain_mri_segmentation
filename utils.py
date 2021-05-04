@@ -1,15 +1,16 @@
-import numpy as np
+from collections import OrderedDict
+from glob import glob
 import matplotlib.pyplot as plt
+import numpy as np
+import os
+from os.path import join
+from PIL import Image
 import torch.nn as nn
 import torch
-import os
-from collections import OrderedDict
-from PIL import Image
-from glob import glob
-from os.path import join
 
 
 def show_aug(inputs, n_rows=5, n_cols=5, image=True):
+    path = "./images/"
     plt.figure(figsize=(10, 10))
     plt.subplots_adjust(wspace=0., hspace=0.)
     i_ = 0
@@ -36,7 +37,7 @@ def show_aug(inputs, n_rows=5, n_cols=5, image=True):
 
         i_ += 1
 
-    return plt.show()
+    return plt.savefig(path+'augmentations.png')
 
 
 def dice_coef_loss(inputs, target):
@@ -152,7 +153,7 @@ def plot_plate_overlap(batch_preds, title, num):
 def make_gif(title):
     folder_path = "./output/gif_images/"
     base_name = "_".join(title.lower().split())
-    file_path = join(folder_path,base_name)
+    file_path = join(folder_path, base_name)
 
     base_len = len(file_path)
     end_len = len(".png")
@@ -160,7 +161,7 @@ def make_gif(title):
     fp_out = f"{file_path}.gif"
 
     img, *imgs = [Image.open(f)
-                  for f in sorted(glob.glob(fp_in),
+                  for f in sorted(glob(fp_in),
                                   key=lambda x: int(x[base_len:-end_len]))]
 
     img.save(fp=fp_out, format='GIF', append_images=imgs,

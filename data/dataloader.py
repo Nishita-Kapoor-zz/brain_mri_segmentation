@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 def create_dataloaders(args, transforms):
 
     dataset_full = BrainMRIDataset(root_dir=args.root_dir, transforms=transforms)
-    test_samples = dataset_full.df.sample(105).values
+    test_samples = dataset_full.get_positive_samples()
 
     # train-test split
     train_size = int(0.8 * len(dataset_full))

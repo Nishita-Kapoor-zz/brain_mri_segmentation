@@ -1,11 +1,11 @@
-from torch.utils.data import Dataset
-import glob
-import os
-import pandas as pd
-import numpy as np
-import cv2
 import albumentations as A
 from albumentations.pytorch import ToTensor
+import cv2
+import glob
+import numpy as np
+import os
+import pandas as pd
+from torch.utils.data import Dataset
 
 
 class BrainMRIDataset(Dataset):
@@ -71,18 +71,14 @@ class BrainMRIDataset(Dataset):
         return 1 if value > 0 else 0
 
 
-
-
-
-
 PATCH_SIZE = 128
 image_transforms = A.Compose([
     A.Resize(width=PATCH_SIZE, height=PATCH_SIZE, p=1.0),
-    #A.HorizontalFlip(p=0.5),
-    #A.VerticalFlip(p=0.5),
-    #A.RandomRotate90(p=0.5),
-    #A.Transpose(p=0.5),
-    #A.ShiftScaleRotate(shift_limit=0.01, scale_limit=0.04, rotate_limit=0, p=0.25),
+    A.HorizontalFlip(p=0.5),
+    A.VerticalFlip(p=0.5),
+    A.RandomRotate90(p=0.5),
+    A.Transpose(p=0.5),
+    A.ShiftScaleRotate(shift_limit=0.01, scale_limit=0.04, rotate_limit=0, p=0.25),
     A.Normalize(p=1.0),
     ToTensor(),
 ])
